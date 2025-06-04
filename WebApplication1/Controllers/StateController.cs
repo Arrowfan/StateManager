@@ -21,6 +21,7 @@ public class StateController : ControllerBase
     public ActionResult<State> Get([FromRoute] string id)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
+        logger.LogInformation(connectionString);
 
         using var connection = new MySqlConnection(connectionString);
         try
