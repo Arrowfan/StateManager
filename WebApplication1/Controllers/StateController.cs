@@ -27,14 +27,15 @@ public class StateController : ControllerBase
         {
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT recording FROM status WHERE id = @id", connection);
+            using var command = new MySqlCommand("SELECT recording, cId FROM status WHERE id = @id", connection);
             command.Parameters.AddWithValue("@id", id);
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
                 bool recording = reader.GetBoolean(0);
-                return Ok(new State { Recording = recording });
+                int cId = reader.GetInt32(1);
+                return Ok(new State { Rec = recording, CId = cId });
             }
         }
         catch (Exception e)
@@ -43,7 +44,7 @@ public class StateController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
 
-        return Ok(new State { Recording = false }); // Or NotFound(), if preferred
+        return Ok(new State { Rec = false }); // Or NotFound(), if preferred
     }
 
     [HttpPost(Name = "SetState")]
@@ -57,12 +58,13 @@ public class StateController : ControllerBase
             connection.Open();
 
             using var command = new MySqlCommand(@"
-                INSERT INTO status (id, recording) 
-                VALUES (@id, @recording) 
-                ON DUPLICATE KEY UPDATE recording = VALUES(recording)", connection);
+                INSERT INTO status (id, recording, cId) 
+                VALUES (@id, @recording, @cId) 
+                ON DUPLICATE KEY UPDATE recording = VALUES(recording), cId = VALUES(cId)", connection);
 
             command.Parameters.AddWithValue("@id", id);
-            command.Parameters.AddWithValue("@recording", state.Recording ? 1 : 0);
+            command.Parameters.AddWithValue("@recording", state.Rec ? 1 : 0);
+            command.Parameters.AddWithValue("@cId", state.CId);
 
             command.ExecuteNonQuery();
         }
