@@ -27,7 +27,7 @@ public class StateController : ControllerBase
         {
             connection.Open();
 
-            using var command = new MySqlCommand("SELECT Recording FROM status WHERE id = @id", connection);
+            using var command = new MySqlCommand("SELECT recording FROM status WHERE id = @id", connection);
             command.Parameters.AddWithValue("@id", id);
 
             using var reader = command.ExecuteReader();
