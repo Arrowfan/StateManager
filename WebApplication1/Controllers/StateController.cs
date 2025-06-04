@@ -21,7 +21,6 @@ public class StateController : ControllerBase
     public ActionResult<State> Get([FromRoute] string id)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        logger.LogInformation(connectionString);
 
         using var connection = new MySqlConnection(connectionString);
         try
@@ -48,7 +47,7 @@ public class StateController : ControllerBase
     }
 
     [HttpPost(Name = "SetState")]
-    public IActionResult Post([FromRoute] string id, [FromBody] State state)
+    public ActionResult<State> Post([FromRoute] string id, [FromBody] State state)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
@@ -66,12 +65,13 @@ public class StateController : ControllerBase
             command.Parameters.AddWithValue("@recording", state.Recording ? 1 : 0);
 
             command.ExecuteNonQuery();
-            return Ok();
         }
         catch (Exception e)
         {
             logger.LogError(e, "Error updating state for ID: {Id}", id);
             return StatusCode(500, "Internal server error");
         }
+
+        return Get(id);
     }
 }
